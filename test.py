@@ -35,7 +35,7 @@ class MyHTMLParser(HTMLParser):
         
 def run(string):
     myindex = index.open_dir("index")
-    writer = myindex.writer(procs=3,  multisegment=True, limitmb=512)
+    writer = myindex.writer(procs=4,  multisegment=True, limitmb=512)
     f = None
     try:
         f = warc.open(string)
@@ -55,14 +55,14 @@ def run(string):
                 # data = parser.getData().decode('utf8')
                 data = striphtml(unicode(record.payload, errors='ignore'))
                 #print "write the data of %d" %(i)
-                if (i % 10000) == 0:
+                if (i % 15000) == 0:
                     print "write the data of %d" %(i)
                     print "commit now"
                     start = time.time()
                     writer.commit()
                     stop = time.time()
                     print "commit over ", (stop - start)
-                    writer = myindex.writer(procs=3,  multisegment=True, limitmb=512)
+                    writer = myindex.writer(procs=4,  multisegment=True, limitmb=512)
                     gc.collect()
             except Exception as e:
                 print "error in the data of %d" %(i)
@@ -78,7 +78,7 @@ def run(string):
             # print data
     print "final commit now"
     start = time.time()
-    writer.commit(procs=3,  multisegment=True, limitmb=512)
+    writer.commit()
     stop = time.time()
     print "final commit over", (stop - start)
 
