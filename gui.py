@@ -2,7 +2,7 @@ import Tkinter as tk
 import tkFileDialog
 import tkMessageBox
 import createIndex
-import test
+import buildIndex
 import time
 from threading import Thread
 #import _tkinter # with underscore, and lowercase 't'
@@ -111,7 +111,7 @@ class Window:
         tkMessageBox.showinfo("Index", "Cleaned!")
     def buildIndexThread(self,path):
         try:
-            test.run(path)
+            buildIndex.run(path)
         except:
             self.clean()
             self.line("Build Index error!!\n Please select current file!!")
