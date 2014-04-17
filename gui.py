@@ -68,6 +68,8 @@ class Window:
             q = qp.parse(self.searchField.get())
             results = searcher.search(q, limit=None)
             #output
+            self.line("Get %r data" %(len(results)))
+            self.line("Query : %r" %(q))
             for x in results:
                 self.line("docId = %5r , score = %r" %(x['docId'], x.score))
         except:

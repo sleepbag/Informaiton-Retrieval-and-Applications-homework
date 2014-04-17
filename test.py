@@ -35,7 +35,7 @@ class MyHTMLParser(HTMLParser):
         
 def run(string):
     myindex = index.open_dir("index")
-    writer = myindex.writer()
+    writer = myindex.writer(procs=3,  multisegment=True, limitmb=512)
     f = None
     try:
         f = warc.open(string)
@@ -48,21 +48,21 @@ def run(string):
     for record in f:
         i = i + 1
         
-        if i >= 2 and i <= 5000:
+        if i >= 2:
             # parser = MyHTMLParser()
             try:    
                 # parser.feed(unicode(record.payload, errors='ignore'))
                 # data = parser.getData().decode('utf8')
                 data = striphtml(unicode(record.payload, errors='ignore'))
                 #print "write the data of %d" %(i)
-                if (i % 1000) == 0:
+                if (i % 10000) == 0:
                     print "write the data of %d" %(i)
                     print "commit now"
                     start = time.time()
                     writer.commit()
                     stop = time.time()
                     print "commit over ", (stop - start)
-                    writer = myindex.writer()
+                    writer = myindex.writer(procs=3,  multisegment=True, limitmb=512)
                     gc.collect()
             except Exception as e:
                 print "error in the data of %d" %(i)
@@ -70,7 +70,7 @@ def run(string):
                 print "------------------------"
                 # print data
             #parser.kill()
-            writer.add_document(docId=i, content=data)
+            writer.add_document(docId=i-1, content=data)
             # print record.header
             # print "-----------------------------------------"
             # print record.payload
@@ -78,7 +78,7 @@ def run(string):
             # print data
     print "final commit now"
     start = time.time()
-    writer.commit()
+    writer.commit(procs=3,  multisegment=True, limitmb=512)
     stop = time.time()
     print "final commit over", (stop - start)
 
