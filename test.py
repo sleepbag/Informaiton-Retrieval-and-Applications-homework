@@ -10,46 +10,10 @@ import time
 
 
 def striphtml(data):
-    # get only the body content
-    # remove the newlines
-    # print data
-    data = data.replace("\n", " ")
-    data = data.replace("\r", " ")
-   
-    # replace consecutive spaces into a single one
-    data = " ".join(data.split())   
+    p = re.compile(r'<.*?>|/a>|&nbsp;')
+    return p.sub(' ', data)
 
-    x = re.search('(<body[^<>]*?>.*?</body>)', data, re.DOTALL)
-    if x == None:
-        x = re.search('(<body[^<>]*?>.*/)', data, re.DOTALL)
-        data = x.groups()[0]
-    else:
-        data = x.groups()[0]
-
-    #print data
-
-    # now remove the java script
-    p = re.compile(r'<script[^<>]*?>.*?</script>')
-    data = p.sub('', data)
-   
-    # remove the css styles
-    p = re.compile(r'<style[^<>]*?>.*?</style>')
-    data = p.sub('', data)
-
-    # remove the css styles
-    p = re.compile(r'<!-.*?->')
-    data = p.sub('', data)
-    
-    # remove html comments
-    p = re.compile(r'')
-    data = p.sub('', data)
-   
-    # remove all the tags
-    p = re.compile(r'<[^<]*?>|&.*?;')
-    data = p.sub(' ', data)    
-    
-    return data
-
+# create a subclass and override the handler methods
 class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if (tag == 'body'):
@@ -83,59 +47,53 @@ def run(string):
         sys.exit()
 
     i = 0
-    count = 1
-    datalist = []
     print "start read record!"
     for record in f:
         i = i + 1
         
         if i >= 2:
-            # parser = MyHTMLParser()
+            parser = MyHTMLParser()
             try:    
-                try:
-                    data = striphtml(unicode(record.payload, errors='ignore'))
-                    datalist.append(data)
-                except :
-                    # print i
-                    parser = MyHTMLParser()
-                    parser.feed(unicode(record.payload, errors='ignore'))
-                    data2 = parser.getData().decode('utf8')
-                    datalist.append(data2)
-                    parser.kill()
-
+                parser.feed(unicode(record.payload, errors='ignore'))
+                data = parser.getData().decode('utf8')
+                # data = striphtml(unicode(record.payload, errors='ignore'))
+                #print "write the data of %d" %(i)
                 if (i % 15000) == 0:
                     print "write the data of %d" %(i)
-                    for x in datalist:
-                        writer.add_document(docId=count, content=x)
-                        count += 1
                     print "commit now"
                     start = time.time()
                     writer.commit()
                     stop = time.time()
                     print "commit over ", (stop - start)
                     writer = myindex.writer(procs=3,  multisegment=True, limitmb=512)
-                    datalist = []
                     gc.collect()
             except Exception as e:
                 print "error in the data of %d" %(i)
                 print e.message, e.args
                 print "------------------------"
                 # print data
-            #parser.kill()
-            # writer.add_document(docId=i-1, content=data)
-    for x in datalist:
-        #writer.add_document(docId=count, content=x)
-        count += 1
+            parser.kill()
+            writer.add_document(docId=i-1, content=data)
+            # print record.header
+            # print "-----------------------------------------"
+            # print record.payload
+            # print "-----------------------------------------"
+            # print data
     print "final commit now"
     start = time.time()
     writer.commit()
     stop = time.time()
     print "final commit over", (stop - start)
 
-    print count
-
 defaultString = "05.warc.gz"
-#run(defaultString)
+tStart = time.time()
+run(defaultString)
+tStop = time.time()
+
+# print "Time :", tStop - tStart
+
+# searcher = myindex.searcher()
+# print len(list(searcher.lexicon("content")))
 
 
     

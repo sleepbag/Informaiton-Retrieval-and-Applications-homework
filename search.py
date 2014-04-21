@@ -7,9 +7,13 @@ myindex = index.open_dir("index")
 searcher = myindex.searcher(weighting=scoring.TF_IDF())
 
 qp = QueryParser("content", schema=myindex.schema)
-q = qp.parse(u"NOT nokia")
+q = qp.parse(u"Nokia")
 results = searcher.search(q, limit=None)
 
-for x in results:
-	print "docId = %5r , score = %r" %(x['docId'], x.score)
-print len(results)
+#for x in results:
+	#print "docId = %5r , score = %r" %(x['docId'], x.score)
+a = 0
+for x in list(searcher.lexicon("docId")):
+	if a == x:
+		print x;
+	a = x
