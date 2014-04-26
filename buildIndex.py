@@ -39,15 +39,19 @@ def striphtml(data):
     # remove the css styles
     p = re.compile(r'<!-.*?->')
     data = p.sub('', data)
+
+    # remove the css styles
+    p = re.compile(r'<a [^<>]*?>.*?</a>')
+    data = p.sub('', data)    
     
     # remove html comments
     p = re.compile(r'')
     data = p.sub('', data)
    
     # remove all the tags
-    p = re.compile(r'<[^<]*?>|&.*?;')
-    data = p.sub(' ', data)    
-    
+    p = re.compile(r'<[^<].*?>|&.*?;')
+    data = p.sub(' ', data)
+
     return data
 
 class MyHTMLParser(HTMLParser):
@@ -92,22 +96,23 @@ def run(string):
         if i >= 2:
             # parser = MyHTMLParser()
             try:    
-                try:
-                    data = striphtml(unicode(record.payload, errors='ignore'))
-                    datalist.append(data)
-                except :
+                
+                # data = striphtml(unicode(record.payload, errors='ignore'))
+                # datalist.append(data)
+
+                # if data == None :
                     # print i
-                    parser = MyHTMLParser()
-                    parser.feed(unicode(record.payload, errors='ignore'))
-                    data2 = parser.getData().decode('utf8')
-                    datalist.append(data2)
-                    parser.kill()
+                parser = MyHTMLParser()
+                parser.feed(unicode(record.payload, errors='ignore'))
+                data = parser.getData().decode('utf8')
+                # datalist.append(data2)
+                parser.kill()
 
                 if (i % 15000) == 0:
                     print "write the data of %d" %(i)
-                    for x in datalist:
-                        writer.add_document(docId=count, content=x)
-                        count += 1
+                    # for x in datalist:
+                    #     writer.add_document(docId=count, content=x)
+                    #     count += 1
                     print "commit now"
                     start = time.time()
                     writer.commit()
@@ -122,17 +127,15 @@ def run(string):
                 print "------------------------"
                 # print data
             #parser.kill()
-            # writer.add_document(docId=i-1, content=data)
-    for x in datalist:
-        #writer.add_document(docId=count, content=x)
-        count += 1
+            writer.add_document(docId=i-1, content=data)
+    # for x in datalist:
+    #     writer.add_document(docId=count, content=x)
+    #     count += 1
     print "final commit now"
     start = time.time()
     writer.commit()
     stop = time.time()
     print "final commit over", (stop - start)
-
-    print count
 
 defaultString = "05.warc.gz"
 #run(defaultString)

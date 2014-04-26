@@ -13,7 +13,5 @@ results = searcher.search(q, limit=None)
 #for x in results:
 	#print "docId = %5r , score = %r" %(x['docId'], x.score)
 a = 0
-for x in list(searcher.lexicon("docId")):
-	if a == x:
-		print x;
-	a = x
+for contents in searcher.lexicon("content"):
+	print contents
